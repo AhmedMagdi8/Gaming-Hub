@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ChatType } from '../types/chatTypes';
+import { ChatType } from '../graphql/types/chatTypes';
 
 const userSchema = new mongoose.Schema<ChatType>(
   {

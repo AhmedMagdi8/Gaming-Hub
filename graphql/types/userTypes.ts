@@ -20,6 +20,7 @@ export default interface UserType {
   };
   medals: Schema.Types.ObjectId[];
   achievements: Schema.Types.ObjectId[];
+  gifts: Schema.Types.ObjectId[];
   likes: Schema.Types.ObjectId[];
   blocked: Schema.Types.ObjectId[];
 }

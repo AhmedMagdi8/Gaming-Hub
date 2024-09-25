@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import UserType from './types/userTypes';
+import UserType from '../graphql/types/userTypes';
 import mongoose from 'mongoose';
 
 dotenv.config();

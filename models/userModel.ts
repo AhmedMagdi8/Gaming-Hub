@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import UserType from '../types/userTypes';
+import UserType from '../graphql/types/userTypes';
 
 const userSchema = new mongoose.Schema<UserType>(
   {
