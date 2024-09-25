@@ -5,7 +5,8 @@ import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import dotenv from 'dotenv';
 import { setupWebSocketServer } from './config/websocket';
 import { connectToDB } from './config/db';
-import { applyMiddlewares } from './middlewares';
+import { applyMiddlewares } from './middlewares/index';
+
 import schema from './graphql/schema'; // Assuming schema combines typeDefs and resolvers
 
 dotenv.config();
