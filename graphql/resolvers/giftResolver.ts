@@ -27,7 +27,8 @@ const resolvers = {
     createGift: async (_: any, { input }: { input: any }, { req }: { req: any }) => {
       const senderId = req.userId; // Take senderId from req.userId
       const { receiverIds, ...rest } = input;
-
+      console.log(receiverIds);
+      
       // Validate the sender exists
       const sender = await User.findById(senderId);
       if (!sender) throw new Error("Sender not found");

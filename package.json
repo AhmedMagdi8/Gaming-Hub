@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.ts",
-    "start-dist": "node dist/index.js",
+    "start": "nodemon server.ts",
+    "start-dist": "node dist/server.js",
     "build": "tsc",
     "test": "jest --watchAll"
   },

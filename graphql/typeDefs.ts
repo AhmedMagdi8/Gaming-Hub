@@ -88,6 +88,30 @@ const typeDefs = gql`
     name: String
     description: String
   }
+  type Message {
+    id: ID!
+    content: String!
+    sender: User!
+    chat: Chat!
+  }
+  input CreateChatInput {
+    users: [ID!]!
+  }
+  type Chat {
+    id: ID!
+    users: [User!]!
+    latestMessage: Message
+  }
+
+  type TypingStatus {
+    userId: ID!
+    room: String!
+  }
+
+  input CreateMessageInput {
+    content: String!
+    chatId: ID!
+  }
 
   type Level {
     name: String!
@@ -103,7 +127,7 @@ const typeDefs = gql`
     medals: [Medal!]
     friends: [User!]
     diamond: Int!
-    subscribed: Subscription!
+    subscribed: Subscription_!
     likesGiven: [User]
     likesReceived: [User!]
     blocked: [User!]
@@ -126,7 +150,7 @@ const typeDefs = gql`
   }
 
   # Subscription details
-  type Subscription {
+  type Subscription_ {
     is: Boolean
     start: String
     end: String
@@ -169,10 +193,15 @@ const typeDefs = gql`
     getGiftsGiven: [Gift!]!
     getGiftsReceived: [Gift!]!
 
-
     # Medal Queries
     getMedal(id: ID!): Medal
     getMedals: [Medal!]!
+
+    # Chat Queries
+    getInbox: [Chat!]!
+    getChat(chatId: ID!): Chat
+    getFullChat(chatId: ID!): [Message!]!
+    getChats: [Chat!]!
   }
 
   # Mutations
@@ -218,7 +247,17 @@ const typeDefs = gql`
     # Gift Mutations
     createGift(input: CreateGiftInput!): Gift!
 
-
+    # Chat Mutations
+    createNewMessage(input: CreateMessageInput!): Message!
+    createChat(input: CreateChatInput!): Chat!
+    markAsRead(chatId: ID!): Boolean!
+    userTyping(room: String!, userId: ID!): Boolean!
+    userStoppedTyping(room: String!, userId: ID!): Boolean!
+  }
+  type Subscription {
+    messageReceived: Message!
+    typing: TypingStatus!
+    stopTyping: TypingStatus!
   }
 `;
 

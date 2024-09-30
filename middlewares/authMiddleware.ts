@@ -10,6 +10,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   // Accessing the Authorization header correctly
   const authHeader: any = req.headers['authorization'] || req.headers['Authorization'];
 
+  console.log(authHeader);
   
   
   if (!authHeader) {
@@ -24,6 +25,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   try {
     // Verify the token
     decodedToken = jwt.verify(token, process.env.SECRET);
+    console.log(decodedToken);
     
   } catch (err) {
     req.isAuth = false;
