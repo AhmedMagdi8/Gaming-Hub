@@ -1,8 +1,6 @@
 import merge from 'lodash';
-import likesResolver from './likesResolver';
-import friendResolver from './friendResolver';
 import giftResolver from './giftResolver';
-import medalResolver from './medalResolver';
+import achievementResolver from './achievementResolver';
 import userResolver from './userResolver';
 
-export default merge.merge(likesResolver, friendResolver, giftResolver, medalResolver, userResolver);
+export default merge.merge(achievementResolver, giftResolver, userResolver);

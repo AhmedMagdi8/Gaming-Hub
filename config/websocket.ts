@@ -1,7 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { verify } from '../utils/verify';
-import User from '../models/userModel';
+import User from '../models/user';
 
 export const setupWebSocketServer = (httpServer: any, schema: any) => {
   const wsServer = new WebSocketServer({

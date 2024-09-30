@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
-import { ChatType } from '../graphql/types/chatTypes';
+import { Schema } from 'mongoose';
+
+
+type ChatType = {
+  _id: Schema.Types.ObjectId;
+  firstUser: Schema.Types.ObjectId;
+  secondUser: Schema.Types.ObjectId;
+  messages: {
+    sender: Schema.Types.ObjectId;
+    text: string;
+    createdAt: Date;
+  }[];
+}
 
 const userSchema = new mongoose.Schema<ChatType>(
   {

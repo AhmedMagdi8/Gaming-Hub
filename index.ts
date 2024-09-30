@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import { setupWebSocketServer } from './config/websocket';
 import { connectToDB } from './config/db';
 import { applyMiddlewares } from './middlewares/index';
+import  authMiddleware  from './middlewares/authMiddleware';
+import errorHandler from './middlewares/errorHandler';
+
 
 import schema from './graphql/schema'; // Assuming schema combines typeDefs and resolvers
 
@@ -16,6 +19,7 @@ async function startServer() {
   const httpServer = createServer(app);
 
   applyMiddlewares(app); // Body parser, static files, etc.
+  app.use(authMiddleware);
 
   // WebSocket Setup
   const wsCleanup = setupWebSocketServer(httpServer, schema);
@@ -23,7 +27,9 @@ async function startServer() {
   // Apollo Server Setup
   const server = new ApolloServer({
     schema,
-    context: async ({ req }) => { /* Context auth logic */ },
+    context: async ({ req }) => { 
+      return {req};
+    },
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       {
@@ -41,10 +47,14 @@ async function startServer() {
   await server.start();
   server.applyMiddleware({ app });
 
+  app.use(errorHandler);
+
+
   // Start HTTP Server
   await new Promise<void>((resolve) =>
     httpServer.listen({ port: process.env.PORT }, resolve)
   );
+
   console.log(`Server running at http://localhost:${process.env.PORT}${server.graphqlPath}`);
 
   // Connect to MongoDB

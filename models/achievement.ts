@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+import mongoose, {Schema} from 'mongoose';
 type AchievementType = {
   name: string;
   description: string;
-  img: string;
+  userId: Schema.Types.ObjectId
 };
 
 const achievementSchema = new mongoose.Schema<AchievementType>(
@@ -16,8 +16,9 @@ const achievementSchema = new mongoose.Schema<AchievementType>(
       type: String,
       required: true,
     },
-    img: {
-      type: String,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
   },
