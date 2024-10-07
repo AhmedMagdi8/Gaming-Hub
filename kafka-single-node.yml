@@ -1,0 +1,47 @@
+version: '3'
+services:
+  kafka:
+    image: 'bitnami/kafka:3.4'  # Specifies the Docker image to use for the Kafka service.
+    networks:   # Networks this service will be attached to.
+      - broker-kafka  # Attaches to the 'broker-kafka' network.
+    container_name: kafka-broker  # Sets the container name for the Kafka service.
+    
+    environment:
+      - KAFKA_ENABLE_KRAFT=yes  # Enables KRaft mode in Kafka.
+      - ALLOW_PLAINTEXT_LISTENER=yes  # Allows the use of plaintext listener for communication.
+      
+      # Node-specific configurations
+      - KAFKA_CFG_NODE_ID=1  # Unique identifier for this Kafka node.
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller  # Roles this Kafka node will perform.
+      
+      # Listener configurations
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER  # Naming the controller listener.
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT  # Naming the inter-broker listener.
+      - KAFKA_CFG_LISTENERS=CLIENT://:29092,EXTERNAL://:9092,CONTROLLER://:9093  # Defines listeners and their ports.
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT  # Maps listeners to security protocols.
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:29092,EXTERNAL://localhost:9092  # Advertised listeners for client communication.
+      
+      # Controller quorum voters
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093  # Identifies other controllers in the cluster.
+    
+    ports:
+      - '9092:9092'  # Exposes the Kafka service port.
+  
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest  # Specifies the Docker image to be used for the Kafdrop service.
+    networks:  # Networks this service will be attached to.
+      - broker-kafka  # Attaches to the 'broker-kafka' network.
+    depends_on:
+      - kafka # Specifies that this service depends on the 'kafka' service being available/running.
+    ports:
+      - 19000:9000  # Maps port 19000 of the host to port 9000 inside the container.
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092  # Specifies the Kafka broker connection string.
+      
+volumes:
+  kafka_data:
+    driver: local  # Defines a named volume for Kafka data persistence.
+
+networks: 
+  broker-kafka: #Defines a custom bridge network named broker-kafka
+    driver: bridge 
