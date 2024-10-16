@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import UserType from '../graphql/types/userTypes';
+import UserType from '../graphql/types/userType';
 import mongoose from 'mongoose';
 
 dotenv.config();
@@ -13,10 +13,10 @@ export const generateToken = (user: UserType) => {
       email: user.email,
     },
     // @ts-ignore
-    process.env.JWT_SECRET
-    // {
-    //   expiresIn: '30d',
-    // }
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '30d',
+    }
   );
 };
 

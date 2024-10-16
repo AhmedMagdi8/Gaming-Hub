@@ -122,6 +122,8 @@ const typeDefs = gql`
     id: ID!
     name: String!
     email: String!
+    bio: String!
+    image: String!
     username: String!
     phone: String!
     medals: [Medal!]

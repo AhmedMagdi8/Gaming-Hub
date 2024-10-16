@@ -10,7 +10,12 @@ interface IUser extends Document {
   username: string;   // Added username field
   password: string;
   phone: string;
+  bio: string;
+  image:string;
   diamond: number;
+  currentPoints:number;
+  totalPoints: number;
+  league:Schema.Types.ObjectId;
   friends: Schema.Types.ObjectId[];
   subscribed: {
     is: boolean;
@@ -21,6 +26,11 @@ interface IUser extends Document {
   level: {
     name: LevelNames;
     num: number;
+  };
+  rankings: {
+    weekly: number;
+    monthly: number;
+    yearly: number;
   };
   medals: Schema.Types.ObjectId[];
   achievements: Schema.Types.ObjectId[];
@@ -56,6 +66,16 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       required: true,
     },
+    bio: {
+      type: String,
+      default:''
+    },
+    image: {
+      type: String,
+      default: ''
+    },
+    totalPoints: { type: Number, default: 0 }, // Total points earned (historical)
+    currentPoints: { type: Number, default: 0 }, // Poin
     diamond: {
       type: Number,
       default: 0,
@@ -89,6 +109,8 @@ const userSchema = new mongoose.Schema<IUser>(
         required: true,
       },
     },
+    league: { type: Schema.Types.ObjectId, ref: 'League' },
+
     medals: [{
       type: Schema.Types.ObjectId,
       ref: 'Medal',
