@@ -27,11 +27,6 @@ interface IUser extends Document {
     name: LevelNames;
     num: number;
   };
-  rankings: {
-    weekly: number;
-    monthly: number;
-    yearly: number;
-  };
   medals: Schema.Types.ObjectId[];
   achievements: Schema.Types.ObjectId[];
   giftsGiven: Schema.Types.ObjectId[];

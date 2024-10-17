@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import { createServer } from 'http';
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
@@ -6,11 +6,11 @@ import dotenv from 'dotenv';
 import { setupWebSocketServer } from './config/websocket';
 import { connectToDB } from './config/db';
 import { applyMiddlewares } from './middlewares/index';
-import  authMiddleware  from './middlewares/authMiddleware';
+import authMiddleware from './middlewares/authMiddleware';
 import errorHandler from './middlewares/errorHandler';
-
-
-import schema from './graphql/schema'; // Assuming schema combines typeDefs and resolvers
+import imageRoutes from './routes/imageRoutes'; // Import your new user routes
+import cronJobs from './cron/cronReset';
+import schema from './graphql/schema';
 
 dotenv.config();
 
@@ -21,6 +21,12 @@ async function startServer() {
   applyMiddlewares(app); // Body parser, static files, etc.
   app.use(authMiddleware);
 
+  // Initialize Cronjobs
+  cronJobs;
+
+  // Use the user routes for handling image uploads and retrieval
+  app.use('/', imageRoutes);
+
   // WebSocket Setup
   const wsCleanup = setupWebSocketServer(httpServer, schema);
 
@@ -28,7 +34,7 @@ async function startServer() {
   const server = new ApolloServer({
     schema,
     context: async ({ req }) => { 
-      return {req};
+      return { req };
     },
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -48,7 +54,6 @@ async function startServer() {
   server.applyMiddleware({ app });
 
   app.use(errorHandler);
-
 
   // Start HTTP Server
   await new Promise<void>((resolve) =>

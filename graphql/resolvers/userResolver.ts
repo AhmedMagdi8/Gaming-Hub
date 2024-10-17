@@ -6,6 +6,7 @@ import Gift from "../../models/gift";
 import Achievement from "../../models/achievement";
 import Medal from "../../models/medals";
 import GenericError from "../../utils/error";
+import redis from '../../redis/redis';
 
 import mongoose from "mongoose"; // Import Types from mongoose for ObjectId
 
@@ -47,7 +48,7 @@ const userResolvers = {
       } catch (error) {
         throw new Error(`Error fetching users: ${error.message}`);
       }
-    },
+    }, 
     // Get friends by level
     getFriendsByLevel: async (_: any, {}: {}, { req }: { req: any }) => {
       try {
@@ -163,6 +164,27 @@ const userResolvers = {
         );
       }
     },
+    onlineUsers: async (_: any, {}: {}, { req }: { req: any }) => {
+      try {
+        const userId = req.userId; // Current user's ID
+        if (!req.isAuth) {
+          const error = new GenericError("Not authenticated!", 401);
+          throw error;
+        }
+
+        // Fetch online user IDs from Redis
+        const onlineUserIds = await redis.smembers('onlineUsers');
+        
+        // Fetch user details from MongoDB for those IDs
+        const onlineUsers = await User.find({ _id: { $in: onlineUserIds } })
+          .select('username image')
+          .lean();
+
+        return onlineUsers;
+      } catch (error) {
+        throw new Error(`Failed to retrieve online users: ${error.message}`);
+      }
+    },
   },
 
   Mutation: {
@@ -238,7 +260,44 @@ const userResolvers = {
         throw new Error(`Login failed: ${error.message}`);
       }
     },
+    updateUser: async(_:any, {
+      name,
+      email,
+      bio,
+      phone,
+    }: {
+      name: string;
+      email: string;
+      bio: string;
+      phone: string;
+    }, {req}: {req: any}) => {
 
+      try {
+        // Check if the user is authenticated
+        if (!req.isAuth) {
+          const error = new GenericError("Not authenticated!", 401);
+          throw error;
+        }
+
+        const existingUser = await User.findById(req.userId);
+        if(!existingUser) {
+          throw new GenericError("User not found", 404);
+        }
+
+        const updatedUser = await User.findByIdAndUpdate({ _id: req.userId }, { $set: {
+          name: name,
+          email: email,
+          bio: bio,
+          phone: phone
+        }}, {new: true, fields: 'name email bio phones'});
+
+        return updatedUser;
+      } catch(e) {
+        throw new GenericError("Failed to update the user", 500);
+      }
+
+
+    },
     // Send friend request
     sendFriendRequest: async (
       _: any,
@@ -620,7 +679,6 @@ const userResolvers = {
         throw new Error(`Failed to block user: ${error.message}`);
       }
     },
-    
   },
 };
 

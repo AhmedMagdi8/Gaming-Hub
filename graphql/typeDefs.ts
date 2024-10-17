@@ -1,74 +1,58 @@
 import { gql } from "apollo-server-express";
 
 const typeDefs = gql`
-  # Achievement Type
-  type Achievement {
-    id: ID!
-    name: String!
-    description: String!
-    createdAt: String!
-    updatedAt: String!
-  }
-
-  # Medal Type
-  type Medal {
-    id: ID!
-    name: String!
-    description: String!
-    img: String!
-    createdAt: String!
-    updatedAt: String!
-  }
-
-  # GraphQL Schema (gift.graphql)
-
   scalar Date
 
-  # The Gift type that represents a gift object
-  type Gift {
+  # User Type
+  type User {
     id: ID!
-    sender: User!
-    receivers: [User!]!
-    count: Int!
-    value: Float!
-    currency: String!
-    type: String!
-    message: String
-    status: String!
-    expirationDate: Date
-    giftCategory: String!
-    isAnonymous: Boolean!
-    createdAt: Date!
-    updatedAt: Date!
+    name: String!
+    email: String!
+    bio: String
+    image: String
+    username: String!
+    phone: String!
+    medals: [Medal!]
+    friends: [User!]
+    diamond: Int!
+    currentPoints: Int!
+    totalPoints: Int!
+    league: League
+    subscribed: Subscription_!
+    level: Level!
+    likesGiven: [User]
+    likesReceived: [User!]
+    blocked: [User!]
+    achievements: [Achievement!]
+    giftsGiven: [Gift!]!
+    giftsReceived: [Gift!]!
+    friendRequests: [FriendRequest!]
+    createdAt: String!
+    updatedAt: String!
   }
 
-  # Input type for creating a new gift
-  input CreateGiftInput {
-    receiverIds: [ID!]!
-    count: Int!
-    value: Float!
-    currency: String!
-    type: String!
-    message: String
-    status: String!
-    expirationDate: Date
-    giftCategory: String!
-    isAnonymous: Boolean!
+  # Updated User Type for Update Mutation Response
+  type UpdatedUser {
+    name: String!
+    email: String!
+    username: String!
+    bio: String
+    phone: String!
   }
 
-  # Input type for updating an existing gift
-  input UpdateGiftInput {
-    id: ID!
-    count: Int
-    value: Float
-    currency: String
-    type: String
-    message: String
-    status: String
-    expirationDate: Date
-    giftCategory: String
-    isAnonymous: Boolean
+  # Level Type
+  type Level {
+    name: String!
+    num: Int!
   }
+
+  # Subscription Details Type
+  type Subscription_ {
+    is: Boolean
+    start: String
+    end: String
+  }
+
   # Achievement Type
   type Achievement {
     id: ID!
@@ -88,24 +72,87 @@ const typeDefs = gql`
     name: String
     description: String
   }
+
+  # League Type
+  type League {
+    id: ID!
+    name: String!
+    description: String
+    rank: Int!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  # Ranking Type
+  type Ranking {
+    userId: ID!
+    position: Int!
+    points: Int!
+    league: League!
+  }
+
+  # Medal Type
+  type Medal {
+    id: ID!
+    name: String!
+    description: String!
+    img: String!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  # Gift Type
+  type Gift {
+    id: ID!
+    sender: User!
+    receivers: [User!]!
+    count: Int!
+    value: Float!
+    currency: String!
+    type: String!
+    message: String
+    status: String!
+    expirationDate: Date
+    giftCategory: String!
+    isAnonymous: Boolean!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  input CreateGiftInput {
+    receiverIds: [ID!]!
+    count: Int!
+    value: Float!
+    currency: String!
+    type: String!
+    message: String
+    status: String!
+    expirationDate: Date
+    giftCategory: String!
+    isAnonymous: Boolean!
+  }
+
+  input UpdateGiftInput {
+    id: ID!
+    count: Int
+    value: Float
+    currency: String
+    type: String
+    message: String
+    status: String
+    expirationDate: Date
+    giftCategory: String
+    isAnonymous: Boolean
+  }
+
+  # Message Type
   type Message {
     id: ID!
     content: String!
     sender: User!
     chat: Chat!
-  }
-  input CreateChatInput {
-    users: [ID!]!
-  }
-  type Chat {
-    id: ID!
-    users: [User!]!
-    latestMessage: Message
-  }
-
-  type TypingStatus {
-    userId: ID!
-    room: String!
+    createdAt: String!
+    updatedAt: String!
   }
 
   input CreateMessageInput {
@@ -113,69 +160,66 @@ const typeDefs = gql`
     chatId: ID!
   }
 
-  type Level {
-    name: String!
-    num: Int!
-  }
-
-  type User {
+  # Chat Type
+  type Chat {
     id: ID!
-    name: String!
-    email: String!
-    bio: String!
-    image: String!
-    username: String!
-    phone: String!
-    medals: [Medal!]
-    friends: [User!]
-    diamond: Int!
-    subscribed: Subscription_!
-    likesGiven: [User]
-    likesReceived: [User!]
-    blocked: [User!]
-    achievements: [Achievement!]
-    giftsGiven: [Gift!]!
-    giftsReceived: [Gift!]!
-    friendRequests: [FriendRequest!]
-    level: Level! # Add level field
+    users: [User!]!
+    latestMessage: Message
     createdAt: String!
     updatedAt: String!
   }
 
+  # Top Player Type
+  type TopPlayer {
+    username: String!
+    points: Int!
+  }
+
+  # TopPlayers type representing the top players in different timeframes
+  type TopPlayers {
+    lastWeek: [TopPlayer!]!
+  }
+
+  input CreateChatInput {
+    users: [ID!]!
+  }
+
+  # Typing Status for Subscription
+  type TypingStatus {
+    userId: ID!
+    room: String!
+  }
+
+  # Friend Request Type
   type FriendRequest {
     id: ID!
-    from: User! # The user who sent the request
-    to: User! # The user who received the request
-    status: String! # Status of the friend request (PENDING, ACCEPTED, REJECTED)
+    from: User!
+    to: User!
+    status: String!
     createdAt: String!
     updatedAt: String!
   }
 
-  # Subscription details
-  type Subscription_ {
-    is: Boolean
-    start: String
-    end: String
-  }
-
-  # Auth Data type
+  # Auth Data Type
   type AuthData {
     token: String!
     user: User!
   }
 
+  # Likes Type
+  type Likes {
+    numLikes: Int!
+    likedBy: [User!]
+  }
+
   # Inputs
-  input userInputData {
+  input UserInputData {
     name: String!
     email: String!
     password: String!
     phone: String!
   }
 
-  type Likes {
-    numLikes: String
-    likedBy: [User!]
-  }
   # Queries
   type Query {
     # User Queries
@@ -185,6 +229,7 @@ const typeDefs = gql`
     getUserAchievements(userId: ID!): [Achievement!]
     getNumLikes(userId: ID!): Likes!
     getFriendRequests: [FriendRequest]!
+    onlineUsers: [String!]!
 
     # Achievement Queries
     getAchievements: [Achievement!]!
@@ -204,6 +249,11 @@ const typeDefs = gql`
     getChat(chatId: ID!): Chat
     getFullChat(chatId: ID!): [Message!]!
     getChats: [Chat!]!
+
+    # League and Ranking Queries
+    leagueRankings(leagueName: String!, period: String!): [TopPlayer!]!
+    topPlayers: TopPlayers!
+    getUserRanking(userId: ID!): Ranking
   }
 
   # Mutations
@@ -217,15 +267,12 @@ const typeDefs = gql`
       phone: String!
     ): User
     login(email: String!, password: String!): AuthData!
-
     updateUser(
-      id: ID!
       name: String
       email: String
+      bio: String
       phone: String
-      password: String
-    ): User
-
+    ): UpdatedUser
     deleteUser(id: ID!): User
 
     # Friend Management
@@ -256,6 +303,8 @@ const typeDefs = gql`
     userTyping(room: String!, userId: ID!): Boolean!
     userStoppedTyping(room: String!, userId: ID!): Boolean!
   }
+
+  # Subscriptions
   type Subscription {
     messageReceived: Message!
     typing: TypingStatus!
