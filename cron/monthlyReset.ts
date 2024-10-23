@@ -4,7 +4,7 @@ export const resetMonthlyPoints = async () => {
     try {
       // Reset current month points and move to last month for all users
       const users = await User.find();
-  
+      
       // Loop through each user and reset their points
       for (const user of users) {
         // Game points reset
