@@ -73,22 +73,30 @@ const typeDefs = gql`
     description: String
   }
 
-  # League Type
+  # Define the League type to represent league information
   type League {
     id: ID!
     name: String!
-    description: String
-    rank: Int!
-    createdAt: String!
-    updatedAt: String!
   }
 
-  # Ranking Type
-  type Ranking {
-    userId: ID!
-    position: Int!
-    points: Int!
-    league: League!
+  # Define the UserLeagueStats type to represent user league statistics
+  type UserLeagueStats {
+    username: String!
+    currentMonthRank: Int
+    currentMonthPoints: Int
+    lastMonthRank: Int
+    lastMonthPoints: Int
+  }
+
+  #  definition for Game Ranking
+  type GameRanking {
+    username: String!
+    currentWeekPoints: Int!
+    currentMonthPoints: Int!
+    totalGamePoints: Int!
+    weekRank: Int!
+    monthRank: Int!
+    totalRank: Int!
   }
 
   # Medal Type
@@ -170,15 +178,24 @@ const typeDefs = gql`
   }
 
   # Top Player Type
-  type TopPlayer {
+  type CurrentWeekPlayerStats {
     username: String!
-    points: Int!
+    currentWeekPoints: Int
+    weekRank: Int
   }
 
-  # TopPlayers type representing the top players in different timeframes
-  type TopPlayers {
-    lastWeek: [TopPlayer!]!
+  type CurrentMonthPlayerStats {
+    username: String!
+    currentMonthPoints: Int
+    monthRank: Int
   }
+
+  type OverallPlayerStats {
+    username: String!
+    overallPoints: Int
+    totalRank: Int
+  }
+
 
   input CreateChatInput {
     users: [ID!]!
@@ -251,9 +268,17 @@ const typeDefs = gql`
     getChats: [Chat!]!
 
     # League and Ranking Queries
-    leagueRankings(leagueName: String!, period: String!): [TopPlayer!]!
-    topPlayers: TopPlayers!
-    getUserRanking(userId: ID!): Ranking
+    getCurrentWeekGameStats: [GameRanking!]!
+    getCurrentMonthGameStats: [GameRanking!]!
+    getOverallGameStats: [GameRanking!]!
+    # Fetch current month league rankings by league name
+    getCurrentMonthLeagueRankings(leagueName: String!): [UserLeagueStats!]!
+    # Fetch last month league rankings by league name
+    getLastMonthLeagueRankings(leagueName: String!): [UserLeagueStats!]!
+    # Fetch Top players 
+    getTop3CurrentWeekPlayers: [CurrentWeekPlayerStats!]!
+    getTop3CurrentMonthPlayers: [CurrentMonthPlayerStats!]!
+    getTop3OverallPlayers: [OverallPlayerStats!]!
   }
 
   # Mutations

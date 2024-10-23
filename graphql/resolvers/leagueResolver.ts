@@ -1,96 +1,30 @@
-import Ranking from "../../models/ranking"; // Ranking model
-import { startOfMonth, endOfMonth, subMonths, subWeeks, startOfWeek, endOfWeek } from "date-fns";
-import GenericError from "../../utils/error";
+import User from "../../models/user";
+import League from "../../models/league";
 
-const rankingResolvers = {
+const resolvers = {
   Query: {
-    // Fetch rankings for a specific league and period (current or last month)
-    leagueRankings: async (_: any, { leagueName, period }: {leagueName: String, period: String}, {req} : { req: any}) => {
-      try {
+    // Fetch current month league rankings by league name (pre-sorted by cron job)
+    getCurrentMonthLeagueRankings: async (_: any, { leagueName }: { leagueName: string }) => {
+      const league = await League.findOne({ name: leagueName });
+      if (!league) throw new Error("League not found");
 
-        if (!req.isAuth) throw new GenericError("Not authenticated!", 401);
-
-        
-        // Calculate date range based on the period
-        const currentMonthStart = startOfMonth(new Date());
-        const currentMonthEnd = endOfMonth(new Date());
-        const lastMonthStart = startOfMonth(subMonths(new Date(), 1));
-        const lastMonthEnd = endOfMonth(subMonths(new Date(), 1));
-
-        const periodStart = period === "current" ? currentMonthStart : lastMonthStart;
-        const periodEnd = period === "current" ? currentMonthEnd : lastMonthEnd;
-
-        // Query for rankings in the specified league and period
-        const rankings: any = await Ranking.find({
-          leagueName,
-          period: "month",
-          periodStart: { $gte: periodStart, $lte: periodEnd },
-        })
-          .populate({
-            path: "user",
-            select: "username", // Fetch only the username field from the user
-          })
-          .sort({ points: -1 }) // Sort by points in descending order
-          .select("points");
-
-        // Map results to return an array of usernames and points
-        return rankings.map(ranking => ({
-          username: ranking.user.username,
-          points: ranking.points,
-        }));
-      } catch (error) {
-        throw new GenericError(`Failed to fetch rankings: ${error.message}`, 500);
-      }
+      return await User.find({ 'league.id': league._id }) // Use league ID for querying users
+        .select('username league.currentMonthRank league.currentMonthPoints') // Select only username, rank, and current month points
+        .sort({ 'league.currentMonthRank': 1 }) // Sort by current month rank in ascending order
+        .lean(); // Convert to plain JavaScript object
     },
 
-    // Fetch top players for last week
-    topPlayers: async (_: any, __: any, { req }: { req: any}) => {
-      if (!req.isAuth) throw new GenericError("Not authenticated!", 401);
+    // Fetch last month league rankings by league name (pre-sorted by cron job)
+    getLastMonthLeagueRankings: async (_: any, { leagueName }: { leagueName: string }) => {
+      const league = await League.findOne({ name: leagueName });
+      if (!league) throw new Error("League not found");
 
-      try {
-        // Get top players for last week
-        const lastWeekTop = await getTopPlayers("week");
-
-        return {
-          lastWeek: lastWeekTop,
-        };
-      } catch (error) {
-        throw new GenericError(`Failed to fetch top players: ${error.message}`, 500);
-      }
-    },
-  },
+      return await User.find({ 'league.id': league._id }) // Use league ID for querying users
+        .select('username league.lastMonthRank league.lastMonthPoints') // Select only username, rank, and last month points
+        .sort({ 'league.lastMonthRank': 1 }) // Sort by last month rank in ascending order
+        .lean(); // Convert to plain JavaScript object
+    }
+  }
 };
 
-// Helper function to get top players by period
-async function getTopPlayers(period) {
-  let periodStart;
-  let periodEnd;
-
-  // Define date range for each period
-  if (period === "week") {
-    periodStart = startOfWeek(subWeeks(new Date(), 1));
-    periodEnd = endOfWeek(subWeeks(new Date(), 1));
-  } else if (period === "month") {
-    periodStart = startOfMonth(subMonths(new Date(), 1));
-    periodEnd = endOfMonth(subMonths(new Date(), 1));
-  }
-
-  // Query top players based on points and date range
-  const query: any = {};
-  if (periodStart && periodEnd) {
-    query.periodStart = { $gte: periodStart, $lte: periodEnd };
-  }
-
-  const topPlayers: any = await Ranking.find(query)
-    .populate("user", "username") // Fetch username from User model
-    .sort({ points: -1 }) // Sort by points descending
-    .limit(3) // Limit to top 3 players
-    .select("points");
-
-  return topPlayers.map(player => ({
-    username: player.user.username,
-    points: player.points,
-  }));
-}
-
-export default rankingResolvers;
+export default resolvers;
