@@ -200,8 +200,6 @@ const userSchema = new mongoose.Schema<IUser>(
 );
 
 // Create indexes for quicker retrieval
-userSchema.index({ 'league.id': 1 }); // Index for league lookup
-userSchema.index({ 'medals': 1 }); // Index for medals lookup
 userSchema.index({ 'friends': 1 }); // Index for friends lookup
 
 const User = mongoose.model<IUser>('User', userSchema);
