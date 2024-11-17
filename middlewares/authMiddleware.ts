@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface AuthenticatedRequest extends Request {
+  isAdmin?: boolean;
   isAuth?: boolean;
   userId?: string;
 }
@@ -40,6 +41,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   // Set userId from the decoded token
   req.userId = decodedToken.userId;
   req.isAuth = true;
+  req.isAdmin = decodedToken.isAdmin;
   console.log("fffffffffffffffffffffffffffffffff");  
   next();
 };

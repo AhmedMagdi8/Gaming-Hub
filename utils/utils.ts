@@ -11,6 +11,7 @@ export const generateToken = (user: UserType) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      isAdmin: user.isAdmin
     },
     // @ts-ignore
     process.env.JWT_SECRET,

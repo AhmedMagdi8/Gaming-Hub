@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose';
 
 export default interface UserType {
+  isAdmin: boolean;
   _id: Schema.Types.ObjectId;
   name: string;
   email: string;

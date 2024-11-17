@@ -13,6 +13,7 @@ interface IUser extends Document {
   bio: string;
   image: string;
   diamond: number;
+  isAdmin: boolean;
 
   // Game points and rankings
   gamePoints: {
@@ -82,6 +83,11 @@ const userSchema = new mongoose.Schema<IUser>(
     phone: {
       type: String,
       required: true,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+      required: true
     },
     bio: {
       type: String,

@@ -63,6 +63,64 @@ const typeDefs = gql`
     updatedAt: String!
   }
 
+
+# CustomLeague Type representing league details
+type CustomLeague {
+  id: ID!
+  name: String!
+  description: String
+  isPrivate: Boolean!
+  maxSeats: Int!
+  registeredPlayers: [User!]!
+  spectators: [User!]!
+  chat: Chat
+  status: String!
+  pointsForTopThree: [Int!]!
+  pointsForWin: Int!
+  playSpeed: String!
+  playType: String!
+  levelName: String!
+  roomBackground: String
+  matches: [Match!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+# Match Type representing matches within a league
+type Match {
+  id: ID!
+  round: Int!
+  stage: String!
+  participants: [User!]!
+  winner: User
+  loser: User
+  createdAt: String!
+  updatedAt: String!
+}
+
+  # Input for creating or updating a league
+  input CreateCustomLeagueInput {
+    name: String!
+    description: String
+    isPrivate: Boolean!
+    password: String
+    maxSeats: Int!
+    pointsForTopThree: [Int!]!
+    pointsForWin: Int!
+    playSpeed: String!
+    playType: String!
+    levelName: String!
+    roomBackground: String
+  }
+  # Input for adding or updating a match
+  input AddCustomMatchInput {
+    leagueId: ID!
+    round: Int!
+    stage: String!
+    participantIds: [ID!]! # IDs of the two participants
+  }
+
+
   input CreateAchievementInput {
     name: String!
     description: String!
@@ -275,10 +333,19 @@ const typeDefs = gql`
     getCurrentMonthLeagueRankings(leagueName: String!): [UserLeagueStats!]!
     # Fetch last month league rankings by league name
     getLastMonthLeagueRankings(leagueName: String!): [UserLeagueStats!]!
-    # Fetch Top players 
+    # Fetch Top players   
     getTop3CurrentWeekPlayers: [CurrentWeekPlayerStats!]!
     getTop3CurrentMonthPlayers: [CurrentMonthPlayerStats!]!
     getTop3OverallPlayers: [OverallPlayerStats!]!
+
+    # Fetch all leagues
+    getCustomLeagues: [CustomLeague!]!
+
+    # Fetch a specific league by ID
+    getCustomLeague(id: ID!): CustomLeague!
+
+    # Fetch matches in a specific league
+    getCustomLeagueMatches(leagueId: ID!): [Match!]!
   }
 
   # Mutations
@@ -327,6 +394,32 @@ const typeDefs = gql`
     markAsRead(chatId: ID!): Boolean!
     userTyping(room: String!, userId: ID!): Boolean!
     userStoppedTyping(room: String!, userId: ID!): Boolean!
+  
+
+    # Create a new custom league
+    createCustomLeague(input: CreateCustomLeagueInput!): CustomLeague!
+
+    # Update a custom league's details
+    updateCustomLeague(id: ID!, input: CreateCustomLeagueInput!): CustomLeague!
+
+    # Delete a custom league
+    deleteCustomLeague(id: ID!): CustomLeague!
+
+    # Add a match to a custom league
+    addCustomMatch(input: AddCustomMatchInput!): Match!
+
+    # Update match results
+    updateCustomMatchResult(matchId: ID!, winnerId: ID!, loserId: ID!): Match!
+
+    # Register a user to a custom league
+    registerUserToCustomLeague(leagueId: ID!, userId: ID!): CustomLeague!
+
+    # Add a spectator to a custom league
+    addSpectatorToCustomLeague(leagueId: ID!, userId: ID!): CustomLeague!
+
+    joinLeague(leagueId: ID!, password: String): CustomLeague!
+    addSpectatorToLeague(leagueId: ID!): CustomLeague!
+    sendMessageToChat(leagueId: ID!, message: String!): Chat!
   }
 
   # Subscriptions
