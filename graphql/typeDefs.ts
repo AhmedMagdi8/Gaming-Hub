@@ -97,6 +97,17 @@ type Match {
   createdAt: String!
   updatedAt: String!
 }
+  type AddSpectatorResult {
+    spectatorId: ID!
+  }
+
+  type GenerateMatchesResult {
+    matches: [Match!]!
+  }
+
+  type JoinLeagueResult {
+    userId: ID!
+  }
 
   # Input for creating or updating a league
   input CreateCustomLeagueInput {
@@ -112,14 +123,12 @@ type Match {
     levelName: String!
     roomBackground: String
   }
-  # Input for adding or updating a match
-  input AddCustomMatchInput {
-    leagueId: ID!
-    round: Int!
-    stage: String!
-    participantIds: [ID!]! # IDs of the two participants
-  }
 
+
+  input ReportMatchResultInput {
+    matchId: ID!
+    winningTeam: [ID!]! # An array of two player IDs representing the winning team
+  }
 
   input CreateAchievementInput {
     name: String!
@@ -220,7 +229,11 @@ type Match {
     createdAt: String!
     updatedAt: String!
   }
-
+    
+  type MessagePayload {
+    chatId: ID!
+    message: Message!
+  }
   input CreateMessageInput {
     content: String!
     chatId: ID!
@@ -395,31 +408,15 @@ type Match {
     userTyping(room: String!, userId: ID!): Boolean!
     userStoppedTyping(room: String!, userId: ID!): Boolean!
   
-
-    # Create a new custom league
+    # Custom League
     createCustomLeague(input: CreateCustomLeagueInput!): CustomLeague!
+    addSpectatorToLeague(leagueId: ID!, userId: ID!): AddSpectatorResult!
+    generateMatches(leagueId: ID!): GenerateMatchesResult!
+    reportMatchResult(input: ReportMatchResultInput!): Match!
+    joinLeague(leagueId: ID!, password: String): JoinLeagueResult!
+    sendMessage(leagueId: ID!, content: String!): Message!
+    markMessageAsRead(messageId: ID!): Message!
 
-    # Update a custom league's details
-    updateCustomLeague(id: ID!, input: CreateCustomLeagueInput!): CustomLeague!
-
-    # Delete a custom league
-    deleteCustomLeague(id: ID!): CustomLeague!
-
-    # Add a match to a custom league
-    addCustomMatch(input: AddCustomMatchInput!): Match!
-
-    # Update match results
-    updateCustomMatchResult(matchId: ID!, winnerId: ID!, loserId: ID!): Match!
-
-    # Register a user to a custom league
-    registerUserToCustomLeague(leagueId: ID!, userId: ID!): CustomLeague!
-
-    # Add a spectator to a custom league
-    addSpectatorToCustomLeague(leagueId: ID!, userId: ID!): CustomLeague!
-
-    joinLeague(leagueId: ID!, password: String): CustomLeague!
-    addSpectatorToLeague(leagueId: ID!): CustomLeague!
-    sendMessageToChat(leagueId: ID!, message: String!): Chat!
   }
 
   # Subscriptions
@@ -427,6 +424,8 @@ type Match {
     messageReceived: Message!
     typing: TypingStatus!
     stopTyping: TypingStatus!
+    customLeagueMessage(chatId: ID!): MessagePayload!
+
   }
 `;
 
