@@ -5,6 +5,7 @@ type LeagueStatus = 'active' | 'ended' | 'coming';
 type PlaySpeed = 'slow' | 'normal' | 'fast';
 type LevelName = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 type PlayType = 'free' | 'limited';
+type CupType = '250k' | '500k' | '1M';
 
 interface ICustomLeague extends Document {
   name: string;
@@ -13,19 +14,25 @@ interface ICustomLeague extends Document {
   password?: string;
   createdByAdmin: boolean;
   status: LeagueStatus;
-  pointsForTopThree: [number, number, number]; // Points for 1st, 2nd, and 3rd place
-  pointsForWin: number; // Points awarded to match winners
-  maxSeats: number; // Maximum number of participants
-  registeredPlayers: Types.ObjectId[]; // User IDs of registered players
-  ranking: number[]; // Ranking of players based on points
-  spectators: Types.ObjectId[]; // User IDs of spectators
-  chat: Types.ObjectId; // Chat ID for group chat
-  matches: Types.ObjectId[] | IMatch[]; // Reference to Match documents
+  pointsForWin: number;
+  maxSeats: 8 | 16 | 32; // Only allows 8, 16, or 32 teams
+  registeredPlayers: Types.ObjectId[];
+  ranking: number[];
+  spectators: Types.ObjectId[];
+  chat: Types.ObjectId;
+  matches: Types.ObjectId[] | IMatch[];
   playSpeed: PlaySpeed;
-  playType: PlayType; // Play type: free or limited
+  playType: PlayType;
   levelName: LevelName;
   roomBackground: string;
-  members: Types.ObjectId[]; // User IDs of league members
+  startTime?: Date; // League starts 15 minutes after reaching max seats
+  prizes: {
+    winnerPrize: string; // Mandatory prize for the winner
+    loserPrize?: string; // Optional prize for the loser
+  };
+  bio?: string; // Optional bio for the league
+  cupType?: Types.ObjectId; // Reference to the CupType model
+  topThreeCups: Types.ObjectId[]; // Reference to the Cup model for the top three cups
 }
 
 const customLeagueSchema = new Schema<ICustomLeague>(
@@ -40,13 +47,21 @@ const customLeagueSchema = new Schema<ICustomLeague>(
       enum: ['active', 'ended', 'coming'],
       default: 'coming',
     },
+    topThreeCups: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Cup',  // Reference to the Cup model for the top three cups
+    }],
     pointsForWin: { type: Number, required: true },
-    maxSeats: { type: Number, required: true },
+    maxSeats: {
+      type: Number,
+      enum: [8, 16, 32], // Restricts to 8, 16, or 32
+      required: true,
+    },
     registeredPlayers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     ranking: { type: [Number], default: [] },
     spectators: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     chat: { type: Schema.Types.ObjectId, ref: 'Chat', required: true },
-    matches: [{ type: Schema.Types.ObjectId, ref: 'Match' }], // Reference to Match model
+    matches: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
     playSpeed: {
       type: String,
       enum: ['slow', 'normal', 'fast'],
@@ -63,12 +78,29 @@ const customLeagueSchema = new Schema<ICustomLeague>(
       required: true,
     },
     roomBackground: { type: String },
-    members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    startTime: { type: Date, default: null }, // Start time calculated after max seats are filled
+    prizes: {
+      winnerPrize: { type: String, required: true },
+      loserPrize: { type: String, default: null },
+    },
+    bio: { type: String, default: null },
+    cupType: { type: Schema.Types.ObjectId, ref: 'CupType', default: null }, // Reference to CupType
   },
   {
     timestamps: true,
   }
 );
+
+customLeagueSchema.pre('save', function (next) {
+  if (
+    this.maxSeats &&
+    this.registeredPlayers.length === this.maxSeats &&
+    !this.startTime
+  ) {
+    this.startTime = new Date(Date.now() + 15 * 60 * 1000); // Sets start time 15 minutes later
+  }
+  next();
+});
 
 const CustomLeague = mongoose.model<ICustomLeague>('CustomLeague', customLeagueSchema);
 

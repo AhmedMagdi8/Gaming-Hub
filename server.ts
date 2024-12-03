@@ -13,6 +13,7 @@ import imageRoutes from "./routes/imageRoutes"; // Import your new user routes
 import { resetMonthlyPoints } from "./cron/monthlyReset";
 import { resetWeeklyPoints } from "./cron/weeklyReset";
 import { updateRankings } from "./cron/updateRankings";
+import path from 'path';
 
 import schema from "./graphql/schema";
 
@@ -36,8 +37,11 @@ async function startServer() {
   // Use the user routes for handling image uploads and retrieval
   app.use("/", imageRoutes);
 
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
   // WebSocket Setup
   const wsCleanup = setupWebSocketServer(httpServer, schema);
+
 
   // Apollo Server Setup
   const server = new ApolloServer({

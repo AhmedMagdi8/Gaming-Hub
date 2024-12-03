@@ -63,40 +63,40 @@ const typeDefs = gql`
     updatedAt: String!
   }
 
+  # CustomLeague Type representing league details
+  type CustomLeague {
+    id: ID!
+    name: String!
+    description: String
+    isPrivate: Boolean!
+    maxSeats: Int!
+    registeredPlayers: [User!]!
+    spectators: [User!]!
+    chat: Chat
+    status: String!
+    topThreeCups: [ID!]!
+    pointsForWin: Int!
+    playSpeed: String!
+    playType: String!
+    levelName: String!
+    roomBackground: String
+    matches: [Match!]!
+    createdAt: String!
+    updatedAt: String!
+  }
 
-# CustomLeague Type representing league details
-type CustomLeague {
-  id: ID!
-  name: String!
-  description: String
-  isPrivate: Boolean!
-  maxSeats: Int!
-  registeredPlayers: [User!]!
-  spectators: [User!]!
-  chat: Chat
-  status: String!
-  pointsForTopThree: [Int!]!
-  pointsForWin: Int!
-  playSpeed: String!
-  playType: String!
-  levelName: String!
-  roomBackground: String
-  matches: [Match!]!
-  createdAt: String!
-  updatedAt: String!
-}
+  # Match Type representing matches within a league
+  type Match {
+    id: ID!
+    round: Int!
+    stage: String!
+    participants: [ID!]!
+    winner: ID
+    loser: ID
+    createdAt: String!
+    updatedAt: String!
+  }
 
-# Match Type representing matches within a league
-type Match {
-  id: ID!
-  round: Int!
-  stage: String!
-  participants: [User!]!
-  winner: User
-  loser: User
-  createdAt: String!
-  updatedAt: String!
-}
   type AddSpectatorResult {
     spectatorId: ID!
   }
@@ -107,6 +107,29 @@ type Match {
 
   type JoinLeagueResult {
     userId: ID!
+  }
+    type CupType {
+    id: ID!
+    name: String!
+    description: String
+    diamondValue: Int!
+    image: String!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  input CupTypeInput {
+    name: String!
+    description: String
+    diamondValue: Int!
+    image: String!
+  }
+
+  input UpdateCupTypeInput {
+    name: String
+    description: String
+    diamondValue: Int
+    image: String
   }
 
   # Input for creating or updating a league
@@ -122,12 +145,18 @@ type Match {
     playType: String!
     levelName: String!
     roomBackground: String
+    prizes: PrizeInput!
+    cupType: String
   }
 
-
+  input PrizeInput {
+    winnerPrize: String!
+    loserPrize: String
+  }
   input ReportMatchResultInput {
-    matchId: ID!
-    winningTeam: [ID!]! # An array of two player IDs representing the winning team
+    matchId: ID!        
+    winningTeamId: ID!   
+    round: Int!           
   }
 
   input CreateAchievementInput {
@@ -229,7 +258,7 @@ type Match {
     createdAt: String!
     updatedAt: String!
   }
-    
+
   type MessagePayload {
     chatId: ID!
     message: Message!
@@ -266,7 +295,6 @@ type Match {
     overallPoints: Int
     totalRank: Int
   }
-
 
   input CreateChatInput {
     users: [ID!]!
@@ -346,7 +374,7 @@ type Match {
     getCurrentMonthLeagueRankings(leagueName: String!): [UserLeagueStats!]!
     # Fetch last month league rankings by league name
     getLastMonthLeagueRankings(leagueName: String!): [UserLeagueStats!]!
-    # Fetch Top players   
+    # Fetch Top players
     getTop3CurrentWeekPlayers: [CurrentWeekPlayerStats!]!
     getTop3CurrentMonthPlayers: [CurrentMonthPlayerStats!]!
     getTop3OverallPlayers: [OverallPlayerStats!]!
@@ -359,6 +387,10 @@ type Match {
 
     # Fetch matches in a specific league
     getCustomLeagueMatches(leagueId: ID!): [Match!]!
+
+    # Cup type
+    getAllCupTypes: [CupType!]!
+    getCupTypeById(id: ID!): CupType
   }
 
   # Mutations
@@ -407,7 +439,7 @@ type Match {
     markAsRead(chatId: ID!): Boolean!
     userTyping(room: String!, userId: ID!): Boolean!
     userStoppedTyping(room: String!, userId: ID!): Boolean!
-  
+
     # Custom League
     createCustomLeague(input: CreateCustomLeagueInput!): CustomLeague!
     addSpectatorToLeague(leagueId: ID!, userId: ID!): AddSpectatorResult!
@@ -417,6 +449,10 @@ type Match {
     sendMessage(leagueId: ID!, content: String!): Message!
     markMessageAsRead(messageId: ID!): Message!
 
+    # Cup Mutations
+    addCupType(input: CupTypeInput!): CupType!
+    updateCupType(id: ID!, input: UpdateCupTypeInput!): CupType!
+    deleteCupType(id: ID!): Boolean!
   }
 
   # Subscriptions
@@ -425,7 +461,6 @@ type Match {
     typing: TypingStatus!
     stopTyping: TypingStatus!
     customLeagueMessage(chatId: ID!): MessagePayload!
-
   }
 `;
 
